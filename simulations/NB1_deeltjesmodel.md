@@ -406,9 +406,10 @@ def init():
 # Update function for each frame
 def update(frame):
     particle.update_position()
+    if particle.r[0] + particle.R > 10 or particle.r[0] - particle.R < -10:
+        particle.v = -particle.v
     dot.set_data([particle.r[0]], [particle.r[1]])
     return dot,
-
 # Create animation
 ani = FuncAnimation(fig, update, frames=range(200), init_func=init, blit=True, interval=50)
 
@@ -431,8 +432,11 @@ Controleer je eigen antwoord door de functie hierboven even te vervangen door de
 # doorlopende doos
 def update(frame):
     particle.update_position()
+    if particle.r[0] > 10:
+        particle.r[0] = -10
+    if particle.r[0] < -10:
+        particle.r[0] = 10
     dot.set_data([particle.r[0]], [particle.r[1]])
-### YOUR CODE HERE ###
     return dot,         
 ```
 
@@ -447,8 +451,9 @@ Test wederom je code door de vernieuwde functie hierboven te plakken.
 # harde wanden
 def update(frame):
     particle.update_position()
+    if particle.r[0] + particle.R > 10 or particle.r[0] - particle.R < -10:
+        particle.v = -particle.v
     dot.set_data([particle.r[0]], [particle.r[1]])
-### YOUR CODE HERE ###
     return dot,
 ```
 
@@ -463,7 +468,7 @@ Verander nu de code zodanig dat de beginsnelheid gegeven wordt door $\vec{v}=5\h
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 
-### YOUR CODE HERE ###
+particle.v = np.array([5,3])
 
 # Create the figure and axis
 fig, ax = plt.subplots()
@@ -485,8 +490,11 @@ def init():
 # Update function for each frame
 def update(frame):
     particle.update_position()
+    if particle.r[0] + particle.R > 10 or particle.r[0] - particle.R < -10:
+        particle.v[0] = -particle.v[0]
+    if particle.r[1] + particle.R > 10 or particle.r[1] - particle.R < -10:
+        particle.v[1] = -particle.v[1]
     dot.set_data([particle.r[0]], [particle.r[1]])
-    ### YOUR CODE HERE ###
     return dot,
 
 # Create animation
@@ -528,12 +536,24 @@ class ParticleClass:
 
 
 ```python
+# Maken van de class met versnelling
+class ParticleClass:
+    def __init__(self, m, v, r, R):
+        self.m = m                         # mass of the particle
+        self.v = np.array(v, dtype=float)  # velocity vector
+        self.r = np.array(r, dtype=float)  # position vector
+        self.R = R                         # radius of the particle
 
+    def update_position(self):
+        self.r += self.v * dt
+    
+    def update_velocity(self, a):
+        self.v += a*dt
 # Simulation parameters
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 particle = ParticleClass(m=1.0, v=[5.0, 0], r=[0.0, 0.0],R=1.0)  
-### YOUR CODE HERE ###
+a = np.array([0,-9.81])
 # Create the figure and axis
 fig, ax = plt.subplots()
 ax.set_xlim(-10, 10)
@@ -555,9 +575,11 @@ def init():
 def update(frame):
     particle.update_velocity(a)
     particle.update_position()
-    
+    if particle.r[0] + particle.R > 10 or particle.r[0] - particle.R < -10:
+        particle.v[0] = -particle.v[0]
+    if particle.r[1] + particle.R > 10 or particle.r[1] - particle.R < -10:
+        particle.v[1] = -particle.v[1]
     dot.set_data([particle.r[0]], [particle.r[1]])
-    ### YOUR CODE HERE ###
     return dot,
 
 # Create animation
@@ -577,7 +599,7 @@ Herinner wat we in Q1 hebben gedaan bij de basics van een numerieke simulatie...
 ```
 
 ```{solution} ex-deeltjesmodel-6
-Jouw antwoord hier...
+Hij blijft oneindig stuiteren omdat bij elke stuiter volledig de kinetische energie behouden blijft.
 ```
 
 Een optie om de simulatie te verbeteren is de tijdstap $\Delta t$ kleiner te maken, maar dan hebben we ook meer geduld meer nodig - het aantal berekeningen schaalt met $\frac{1}{\Delta t}$. Een tweede optie is een meer directe oplossing: We weten dat $a = \mathrm{const.}$ en daarom weten we ook de bewegingsvergelijking van het deeltje!
@@ -664,7 +686,22 @@ Maak de code hieronder voor twee deeltjes die bewegen in een afgesloten doos. Be
 dt = 0.1         # time step
 num_steps = 500  # number of time steps
 particleA = ParticleClass(m=1.0, v=[0, 0], r=[0.0, 0.0],R=1.0)  
-### YOUR CODE HERE ###
+particleB = ParticleClass(m=1.0, v=[1, 0], r=[0.0, 0.0],R=1.0)
+a = np.array([0,-9.81])
+
+class ParticleClass:
+    def __init__(self, m, v, r, R):
+        self.m = m                  
+        self.v = np.array(v, dtype=float)  
+        self.r = np.array(r, dtype=float)  
+        self.R = R  
+
+    def update_position(self):
+        self.r += self.v * dt + 1/2 * a * dt**2  
+    
+    def update_velocity(self, a):
+        """Update the particle's velocity."""
+        self.v += a*dt
 
 track_x = []
 track_y = []
@@ -690,10 +727,11 @@ def init():
 
 # Update function for each frame
 def update(frame):
+        
     particleA.update_position()
     particleA.update_velocity(a)
-
-### YOUR CODE HERE ###
+    particleB.update_position()
+    particleB.update_velocity(a)
 
     track_x.append(particleA.r[0])
     track_y.append(particleA.r[1])
@@ -757,7 +795,9 @@ class ParticleClass:
         self.r += self.v * dt  
 
     def collide_detection(self, other):
-        ### YOUR CODE HERE ###
+        dx = abs(self.r[0]-other.r[0])
+        dy = abs(self.r[1]-other.r[1])
+        rr = self.R + other.R
         return  dx**2+dy**2 < rr**2 
 ```
 
@@ -809,7 +849,8 @@ def update(frame):
 
     # botsing tussen de deeltjes onderling
     if particleA.collide_detection(particleB):
-        ### YOUR CODE HERE ###
+        particleA.v = -particleA.v
+        particleB.v = -particleB.v
 
 
     # botsing met de wand
@@ -914,7 +955,7 @@ class ParticleClass:
 dt = 0.1         # time step
 num_steps = 530  # number of time steps
 m1 = 1.0
-m2 = 1.0
+m2 = 50
 
 particleA = ParticleClass(m=m1, v=[0, 0], r=[-4.0, 0.0],R=0.45)  
 particleB = ParticleClass(m=m2, v=[-1, 0], r=[-2.0, 0.0],R=0.45)  
@@ -958,6 +999,7 @@ def update(frame):
 
     #collision detection and response
     if particleA.collide_detection(particleB):
+        counter += 1
         vA, vB, mA, mB, rA, rB = particleA.v, particleB.v, particleA.m, particleB.m, particleA.r, particleB.r
         vA_new = vA - 2 * mB / (mA + mB) * np.dot(vA - vB, rA - rB) / (1e-12+np.linalg.norm(rA - rB))**2 * (rA - rB)
         vB_new = vB - 2 * mA / (mA + mB) * np.dot(vB - vA, rB - rA) / (1e-12+np.linalg.norm(rB - rA))**2 * (rB - rA)
@@ -991,13 +1033,15 @@ from IPython.display import HTML
 HTML(ani.to_jshtml())
 ```
 
+
+
 ```{exercise}
 Pas de bovenstaande code aan zodat $m_1 = 1$ en $m_2 = 50$. Run de code en geef hieronder als integer aan hoeveel botsingen totaal hebben plaats gevonden. Let op! Het kan zijn dat je voor het precies antwoord nog wat dingen moet aanpassen...
 ```
 
 
 ```python tags=["NB1_eindantwoord"]
-#num_botsingen = ...
+#num_botsingen = 
 ### YOUR CODE HERE ###
 ```
 
