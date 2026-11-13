@@ -36,7 +36,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Beginwaarden
-dt = 0.25                  #s
+dt = 0.25                #s
 t_e = 10                   #s
 N = int(t_e/dt)+1
 t = np.arange(0,t_e+dt,dt) #s
@@ -79,6 +79,9 @@ Maak het tijdsinterval $dt$ groter en vergelijk de afgelegde weg in de tien seco
 
 
 <!-- Jouw antwoord hier  -->
+
+
+De totale afgelegde afstand verandert niet bij verschillende waarden van dt. Vanuit de natuurkunde gezien is dit wel logisch omdat een afgelegde afstand niet afhangt van de aantal metingen.  Het methode van discretisatie beschrijft de beweging van fietser 2 niet voldoende. Bij elk tijdsinterval wordt een constante snelheid genomen terwijl het in de werkelijkheid toeneemt.
 
 ```python
 %reset -f  #clears memory as we don't need it further down 
@@ -181,6 +184,10 @@ Voorspel en controleer vervolgens met onderstaande code.
 ```
 
 ```python
+print(particle_array[0].r,particle_array[1].r,particle_array[2].r,particle_array[3].r)
+```
+
+```python
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -229,7 +236,19 @@ En als je wilt gaan voor een uitdaging:
 ```
 
 ```python
-### YOUR CODE HERE ###
+particles = []
+
+for startpunt_x in range(10):
+    particles.append(ParticleClass(m=1.0, v=[np.random.randint(-5,6), 0], r=[startpunt_x, 0.0],R=1.0))
+
+
+plt.figure()
+for i in range(2):
+    for particle in particles:
+        plt.plot(particle.r[0],particle.r[1],'k.')
+        particle.update_position(0.1)
+plt.grid()
+plt.show()
 ```
 
 Onze simulaties worden snel “zwaar”. Er moeten veel berekeningen gedaan worden en dat kost nu eenmaal tijd. Nu is het wel zo dat sommige berekeningen meer tijd kosten dan anderen. Om te kijken of een stukje code geoptimaliseerd kan worden, moeten we een timer maken. Dat kan met onderstaande code:
@@ -237,19 +256,23 @@ Onze simulaties worden snel “zwaar”. Er moeten veel berekeningen gedaan word
 ```python
 import time
 import numpy as np
+resultaat = 0
 
-start = time.time()
+for i in range(50):
+    start = time.time()
+    
+    array = np.array([])
+    N = int(1e5)
+    
+    for i in range(N):
+        array = np.append(array,np.random.rand(1,2))
+    
+    eind = time.time()
+    lengte = eind - start
+    
+    resultaat = resultaat + lengte
 
-array = np.array([])
-N = int(1e5)
-
-for i in range(N):
-    array = np.append(array,np.random.rand(1))
-
-eind = time.time()
-lengte = eind - start
-
-print("Dit kostte ", lengte, "seconde!")
+print("Dit kostte gemiddeld", resultaat/50, "seconde!")
 ```
 
 Idealiter draaien we de bovenstaande code een aantal keer zodat we een goede schatting hebben van de rekentijd.
@@ -272,7 +295,26 @@ De runtime is {eval}`<naam variabele>` korter.
 ```
 
 ```python
+resultaat = 0
+for i in range(50):
+    start = time.time()
+    
+    array = np.array([])
+    N = int(1e5)
+    
+    for i in range(N):
+        array = np.append(array,np.random.rand(1,1))
+    
+    eind = time.time()
+    lengte = eind - start
+    
+    resultaat = resultaat + lengte
 
+print("Dit kostte gemiddeld", resultaat/50, "seconde!")
+```
+
+```python
+?np.random.rand
 ```
 
 ## Aan de slag met deeltjes
